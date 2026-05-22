@@ -2,6 +2,12 @@ import { db } from '@/lib/db/client';
 import type { WorkCompanyWithRoles, FullMasterResume } from '@/types/master-resume';
 
 export async function getOrCreateMasterResume(userId: string) {
+	await db.user.upsert({
+		where: { id: userId },
+		update: {},
+		create: { id: userId, email: userId === 'local-user' ? 'local@localhost' : '' },
+	});
+
 	let resume = await db.masterResume.findUnique({ where: { userId } });
 	if (!resume) {
 		resume = await db.masterResume.create({ data: { userId } });
