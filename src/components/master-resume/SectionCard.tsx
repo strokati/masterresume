@@ -21,8 +21,8 @@ export function SectionCard({
 
 	return (
 		<Card>
-			<CardHeader className={cn('flex flex-row items-center justify-between space-y-0 p-4')}>
-				<h2 className="text-base font-semibold">{title}</h2>
+			<CardHeader className={cn('flex flex-row items-center justify-between space-y-0 p-5')}>
+				<h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
 				<div className="flex items-center gap-2">
 					{action}
 					{collapsible && (
@@ -33,7 +33,7 @@ export function SectionCard({
 						>
 							<ChevronDown
 								className={cn(
-									'h-4 w-4 transition-transform',
+									'h-4 w-4 transition-transform duration-200',
 									collapsed && '-rotate-90',
 								)}
 							/>
@@ -41,7 +41,7 @@ export function SectionCard({
 					)}
 				</div>
 			</CardHeader>
-			{!collapsed && <CardContent className="px-4 pb-4 pt-0">{children}</CardContent>}
+			{!collapsed && <CardContent className="px-5 pb-5 pt-0">{children}</CardContent>}
 		</Card>
 	);
 }

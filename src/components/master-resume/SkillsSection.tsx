@@ -82,7 +82,7 @@ function SortableSkillBadge({
 					onChange={(e) => setName(e.target.value)}
 					onBlur={save}
 					onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } }}
-					className="h-6 w-24 text-xs"
+					className="h-7 w-28 text-xs"
 				/>
 			</span>
 		);
@@ -183,7 +183,7 @@ function SkillCategory({
 					onChange={(e) => setNewSkill(e.target.value)}
 					onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
 					placeholder="Add skill..."
-					className="h-7 w-36 text-xs"
+					className="h-8 w-40 text-xs"
 					disabled={isPending}
 				/>
 			</div>
@@ -249,7 +249,7 @@ export function SkillsSection({
 							onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCategory(); } }}
 							onBlur={() => { if (!newCategory.trim()) setShowCategoryInput(false); }}
 							placeholder="Category name..."
-							className="h-7 w-40 text-xs"
+							className="h-8 w-44 text-xs"
 						/>
 						<Button variant="ghost" size="icon-sm" onClick={addCategory}>
 							<Plus className="h-3 w-3" />
