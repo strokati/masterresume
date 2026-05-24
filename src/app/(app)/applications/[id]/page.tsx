@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { auth } from '@/lib/auth/config';
 import { getApplicationById } from '@/server/queries/applications';
+import { getAiProviderConfigs } from '@/server/queries/settings';
 import { ApplicationDetailView } from './_components/ApplicationDetailView';
 
 export const dynamic = 'force-dynamic';
@@ -15,9 +16,12 @@ export default async function ApplicationDetailPage({
 	const userId = session?.user?.id ?? 'local-user';
 
 	const { id } = await params;
-	const application = await getApplicationById(id, userId);
+	const [application, aiConfigs] = await Promise.all([
+		getApplicationById(id, userId),
+		getAiProviderConfigs(userId),
+	]);
 
 	if (!application) notFound();
 
-	return <ApplicationDetailView application={application} />;
+	return <ApplicationDetailView application={application} aiConfigs={aiConfigs} />;
 }

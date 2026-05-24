@@ -9,11 +9,9 @@ import {
 	Globe,
 	Calendar,
 	DollarSign,
-	Sparkles,
 	FileText,
 	Mail,
 	Trash2,
-	Lock,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +26,7 @@ import {
 } from '@/components/ui/dialog';
 import { StatusStepper } from '@/components/shared/StatusStepper';
 import { ExcitementRating } from '@/components/shared/ExcitementRating';
+import { VacancyAnalysisPanel } from '@/components/resume-editor/VacancyAnalysisPanel';
 import {
 	updateApplicationStatus,
 	updateApplicationTracking,
@@ -35,6 +34,8 @@ import {
 } from '@/server/actions/applications';
 import type { ApplicationDetail } from '@/types/applications';
 import type { ApplicationStatus } from '@/lib/validations/applications';
+
+type AiConfig = { providerId: string; model: string; isDefault: boolean; apiKey: string };
 
 function formatDateForInput(date: Date | string | null): string {
 	if (!date) return '';
@@ -91,7 +92,13 @@ function TrackingField({
 	);
 }
 
-export function ApplicationDetailView({ application }: { application: ApplicationDetail }) {
+export function ApplicationDetailView({
+	application,
+	aiConfigs,
+}: {
+	application: ApplicationDetail;
+	aiConfigs: AiConfig[];
+}) {
 	const [isPending, startTransition] = useTransition();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const { vacancy } = application;
@@ -204,24 +211,12 @@ export function ApplicationDetailView({ application }: { application: Applicatio
 						</CardContent>
 					</Card>
 
-					{/* AI Analysis placeholder */}
-					<Card>
-						<CardContent className="p-5">
-							<div className="flex items-center gap-3 text-muted-foreground">
-								<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-									<Lock className="h-5 w-5" />
-								</div>
-								<div>
-									<h3 className="text-sm font-medium text-foreground">AI Analysis</h3>
-									<p className="text-xs">Configure an AI provider in Settings to unlock vacancy analysis</p>
-								</div>
-							</div>
-							<Button variant="outline" className="mt-4" disabled>
-								<Sparkles className="h-4 w-4 mr-1.5" />
-								Analyze with AI
-							</Button>
-						</CardContent>
-					</Card>
+					{/* AI Analysis */}
+					<VacancyAnalysisPanel
+						applicationId={application.id}
+						configs={aiConfigs}
+						existingAnalysis={vacancy.aiAnalysis}
+					/>
 				</div>
 
 				{/* Right column — Tracking & Documents */}
