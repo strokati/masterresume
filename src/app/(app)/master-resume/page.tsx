@@ -11,6 +11,7 @@ import {
 	getVolunteeringRoles,
 	getPublications,
 } from '@/server/queries/master-resume';
+import { getAiProviderConfigs } from '@/server/queries/settings';
 import { MasterResumeView } from './_components/MasterResumeView';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,7 @@ export default async function MasterResumePage() {
 	const userId = session?.user?.id ?? 'local-user';
 
 	const resume = await getOrCreateMasterResume(userId);
-	const [companies, education, skills, certifications, awards, projects, volunteeringRoles, publications] =
+	const [companies, education, skills, certifications, awards, projects, volunteeringRoles, publications, aiConfigs] =
 		await Promise.all([
 			getWorkExperience(resume.id),
 			getEducation(resume.id),
@@ -31,6 +32,7 @@ export default async function MasterResumePage() {
 			getProjects(resume.id),
 			getVolunteeringRoles(resume.id),
 			getPublications(resume.id),
+			getAiProviderConfigs(userId),
 		]);
 
 	return (
@@ -44,6 +46,7 @@ export default async function MasterResumePage() {
 			projects={projects}
 			volunteeringRoles={volunteeringRoles}
 			publications={publications}
+			aiConfigs={aiConfigs}
 		/>
 	);
 }

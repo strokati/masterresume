@@ -1,6 +1,7 @@
 'use client';
 
 import { PageHeader } from '@/components/shared/PageHeader';
+import { ImportResumeButton } from '@/components/master-resume/ImportResumeButton';
 import { SectionCard } from '@/components/master-resume/SectionCard';
 import { ContactInfoForm } from '@/components/master-resume/ContactInfoForm';
 import { TargetTitleForm } from '@/components/master-resume/TargetTitleForm';
@@ -29,6 +30,7 @@ export function MasterResumeView({
 	projects,
 	volunteeringRoles,
 	publications,
+	aiConfigs,
 }: {
 	resume: {
 		id: string;
@@ -44,12 +46,16 @@ export function MasterResumeView({
 	projects: Project[];
 	volunteeringRoles: VolunteeringRole[];
 	publications: Publication[];
+	aiConfigs: { providerId: string; model: string; isDefault: boolean; apiKey: string }[];
 }) {
 	const contactInfo = (resume.contactInfo as ContactInfoInput | null) ?? undefined;
 
 	return (
 		<div className="space-y-6">
-			<PageHeader title="Master Resume" description="Your complete career history — the single source of truth." />
+			<div className="flex items-start justify-between">
+				<PageHeader title="Master Resume" description="Your complete career history — the single source of truth." />
+				<ImportResumeButton resumeId={resume.id} configs={aiConfigs} />
+			</div>
 
 			<SectionCard
 				title="Contact Information"

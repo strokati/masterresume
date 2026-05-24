@@ -52,6 +52,7 @@ import type {
 	CreatePublicationInput,
 	UpdatePublicationInput,
 } from '@/lib/validations/master-resume';
+import type { ImportedResumeData } from '@/lib/ai/prompts/import-resume';
 
 async function requireAuth(): Promise<string> {
 	const session = await auth();
@@ -653,5 +654,208 @@ export async function reorderPublications(
 	} catch {
 		throw new Error('Failed to reorder publications.');
 	}
+	revalidatePath('/master-resume');
+}
+
+// =============================================================================
+// Import Resume (AI extraction → bulk write)
+// =============================================================================
+
+export async function applyImportedResume(
+	resumeId: string,
+	data: ImportedResumeData,
+	mode: 'overwrite' | 'merge',
+): Promise<void> {
+	const userId = await requireAuth();
+
+	const resume = await db.masterResume.findUnique({ where: { id: resumeId } });
+	if (!resume || resume.userId !== userId) {
+		throw new Error('Resume not found.');
+	}
+
+	await db.$transaction(async (tx) => {
+		if (mode === 'overwrite') {
+			await tx.workCompany.deleteMany({ where: { resumeId } });
+			await tx.education.deleteMany({ where: { resumeId } });
+			await tx.skill.deleteMany({ where: { resumeId } });
+			await tx.certification.deleteMany({ where: { resumeId } });
+			await tx.award.deleteMany({ where: { resumeId } });
+			await tx.project.deleteMany({ where: { resumeId } });
+			await tx.volunteeringRole.deleteMany({ where: { resumeId } });
+			await tx.publication.deleteMany({ where: { resumeId } });
+		}
+
+		const flatUpdates: Record<string, unknown> = {};
+		if (data.contactInfo) flatUpdates.contactInfo = ContactInfoSchema.parse(data.contactInfo);
+		if (data.targetTitle) flatUpdates.targetTitle = data.targetTitle;
+		if (data.professionalSummary) flatUpdates.professionalSummary = data.professionalSummary;
+		if (Object.keys(flatUpdates).length > 0) {
+			await tx.masterResume.update({ where: { id: resumeId }, data: flatUpdates });
+		}
+
+		if (data.workCompanies?.length) {
+			const existingCount = await tx.workCompany.count({ where: { resumeId } });
+			for (let ci = 0; ci < data.workCompanies.length; ci++) {
+				const c = data.workCompanies[ci];
+				const company = await tx.workCompany.create({
+					data: {
+						resumeId,
+						name: c.name,
+						location: c.location,
+						employmentType: c.employmentType,
+						startDate: c.startDate,
+						endDate: c.endDate,
+						order: existingCount + ci,
+					},
+				});
+				if (c.roles?.length) {
+					for (let ri = 0; ri < c.roles.length; ri++) {
+						const r = c.roles[ri];
+						const role = await tx.workRole.create({
+							data: {
+								companyId: company.id,
+								title: r.title,
+								startDate: r.startDate,
+								endDate: r.endDate,
+								responsibilities: r.responsibilities ?? undefined,
+								achievements: r.achievements ?? undefined,
+								technologies: r.technologies ?? undefined,
+								order: ri,
+							},
+						});
+						if (r.projects?.length) {
+							await tx.workProject.createMany({
+								data: r.projects.map((p, pi) => ({
+									roleId: role.id,
+									name: p.name,
+									startDate: p.startDate,
+									endDate: p.endDate,
+									description: p.description,
+									contribution: p.contribution,
+									technologies: p.technologies ?? undefined,
+									outcome: p.outcome,
+									order: pi,
+								})),
+							});
+						}
+					}
+				}
+			}
+		}
+
+		if (data.educations?.length) {
+			const count = await tx.education.count({ where: { resumeId } });
+			await tx.education.createMany({
+				data: data.educations.map((e, i) => ({
+					resumeId,
+					institution: e.institution,
+					degree: e.degree,
+					field: e.field,
+					location: e.location,
+					startDate: e.startDate,
+					endDate: e.endDate,
+					gpa: e.gpa,
+					honors: e.honors,
+					activities: e.activities ?? undefined,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.skills?.length) {
+			const count = await tx.skill.count({ where: { resumeId } });
+			await tx.skill.createMany({
+				data: data.skills.map((s, i) => ({
+					resumeId,
+					name: s.name,
+					category: s.category,
+					level: s.level,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.certifications?.length) {
+			const count = await tx.certification.count({ where: { resumeId } });
+			await tx.certification.createMany({
+				data: data.certifications.map((c, i) => ({
+					resumeId,
+					name: c.name,
+					issuer: c.issuer,
+					issueDate: c.issueDate,
+					expiryDate: c.expiryDate,
+					credentialId: c.credentialId,
+					url: c.url,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.awards?.length) {
+			const count = await tx.award.count({ where: { resumeId } });
+			await tx.award.createMany({
+				data: data.awards.map((a, i) => ({
+					resumeId,
+					title: a.title,
+					issuer: a.issuer,
+					date: a.date,
+					description: a.description,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.projects?.length) {
+			const count = await tx.project.count({ where: { resumeId } });
+			await tx.project.createMany({
+				data: data.projects.map((p, i) => ({
+					resumeId,
+					name: p.name,
+					description: p.description,
+					role: p.role,
+					startDate: p.startDate,
+					endDate: p.endDate,
+					technologies: p.technologies ?? undefined,
+					url: p.url,
+					repoUrl: p.repoUrl,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.volunteeringRoles?.length) {
+			const count = await tx.volunteeringRole.count({ where: { resumeId } });
+			await tx.volunteeringRole.createMany({
+				data: data.volunteeringRoles.map((v, i) => ({
+					resumeId,
+					organization: v.organization,
+					role: v.role,
+					location: v.location,
+					startDate: v.startDate,
+					endDate: v.endDate,
+					responsibilities: v.responsibilities ?? undefined,
+					order: count + i,
+				})),
+			});
+		}
+
+		if (data.publications?.length) {
+			const count = await tx.publication.count({ where: { resumeId } });
+			await tx.publication.createMany({
+				data: data.publications.map((p, i) => ({
+					resumeId,
+					title: p.title,
+					authors: p.authors,
+					publisher: p.publisher,
+					date: p.date,
+					url: p.url,
+					doi: p.doi,
+					description: p.description,
+					order: count + i,
+				})),
+			});
+		}
+	});
+
 	revalidatePath('/master-resume');
 }
