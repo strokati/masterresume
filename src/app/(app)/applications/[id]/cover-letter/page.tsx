@@ -3,7 +3,6 @@ import { auth } from '@/lib/auth/config';
 import { getApplicationById } from '@/server/queries/applications';
 import { getCoverLetterDrafts, getActiveCoverLetterDraft } from '@/server/queries/cover-letters';
 import { getAiProviderConfigs } from '@/server/queries/settings';
-import { createCoverLetterDraft } from '@/server/actions/cover-letters';
 import { CoverLetterEditorView } from './_components/CoverLetterEditorView';
 import { db } from '@/lib/db/client';
 
@@ -29,8 +28,13 @@ export default async function CoverLetterEditorPage({
 
 	let activeDraft = await getActiveCoverLetterDraft(applicationId);
 	if (!activeDraft && drafts.length === 0) {
-		const draftId = await createCoverLetterDraft(applicationId, 'Draft 1');
-		activeDraft = await db.coverLetterDraft.findUnique({ where: { id: draftId } });
+		activeDraft = await db.coverLetterDraft.create({
+			data: {
+				applicationId,
+				name: 'Draft 1',
+				tone: 'professional',
+			},
+		});
 	}
 
 	return (
