@@ -43,8 +43,11 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Build and push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         push: true
@@ -63,15 +66,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    # Remove this `if` condition once you configure the secrets below
-    if: ${{ secrets.DEPLOY_HOST != '' }}
-
-    environment:
-      name: production
-      url: ${{ secrets.NEXTAUTH_URL }}
+    environment: production
 
     steps:
+    - name: Check deploy secrets
+      id: check
+      run: |
+        if [ -z "$DEPLOY_HOST" ]; then
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+          echo "Skipping deploy — DEPLOY_HOST secret not configured"
+        fi
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+
     - name: Deploy via SSH
+      if: steps.check.outputs.skip != 'true'
       uses: appleboy/ssh-action@v1
       with:
         host: ${{ secrets.DEPLOY_HOST }}
