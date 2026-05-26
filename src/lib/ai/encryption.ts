@@ -7,7 +7,12 @@ const AUTH_TAG_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
 	const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET;
-	if (!secret) throw new Error('NEXTAUTH_SECRET is required for API key encryption');
+	if (!secret) {
+		if (process.env.AUTH_MODE === 'none') {
+			return scryptSync('local-user-encryption-key', 'masterresume-salt', KEY_LENGTH);
+		}
+		throw new Error('NEXTAUTH_SECRET is required for API key encryption');
+	}
 	return scryptSync(secret, 'masterresume-salt', KEY_LENGTH);
 }
 

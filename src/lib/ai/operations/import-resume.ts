@@ -1,19 +1,15 @@
 import { streamObject } from 'ai';
 import { getProviderForUser } from '@/lib/ai/providers';
-import { IMPORT_RESUME_SYSTEM, ImportedResumeSchema } from '@/lib/ai/prompts/import-resume';
+import { IMPORT_RESUME_SYSTEM } from '@/lib/ai/prompts/import-resume';
 import { db } from '@/lib/db/client';
 
-export async function importResume(
-	userId: string,
-	fileText: string,
-	providerId: string,
-) {
+export async function importResume(userId: string, fileText: string, providerId: string) {
 	const startTime = Date.now();
 	const { model, modelName } = await getProviderForUser(userId, providerId);
 
 	const result = streamObject({
 		model,
-		schema: ImportedResumeSchema,
+		output: 'no-schema',
 		system: IMPORT_RESUME_SYSTEM,
 		prompt: fileText,
 		onFinish: async ({ usage, object: extractedObject }) => {
@@ -36,11 +32,11 @@ export async function importResume(
 			}
 
 			if (extractedObject) {
-					const companies = extractedObject.workCompanies?.length ?? 0;
-					const edu = extractedObject.educations?.length ?? 0;
-					const skills = extractedObject.skills?.length ?? 0;
-					console.log(`[import-resume] Extracted: ${companies} companies, ${edu} educations, ${skills} skills`);
-				}
+				const companies = extractedObject.workCompanies?.length ?? 0;
+				const edu = extractedObject.educations?.length ?? 0;
+				const skills = extractedObject.skills?.length ?? 0;
+				console.log(`[import-resume] Extracted: ${companies} companies, ${edu} educations, ${skills} skills`);
+			}
 		},
 		onError: async (err) => {
 			const durationMs = Date.now() - startTime;

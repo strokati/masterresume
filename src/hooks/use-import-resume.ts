@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { parsePartialJson } from 'ai';
 import type { ImportedResumeData } from '@/lib/ai/prompts/import-resume';
 
 type ProgressSection = {
@@ -25,12 +24,16 @@ const SECTION_NAMES = [
 
 function inferProgress(partial: Record<string, unknown>): ProgressSection[] {
 	return SECTION_NAMES.map((name) => {
-		const key = name === 'Work Experience' ? 'workCompanies'
-			: name === 'Volunteering' ? 'volunteeringRoles'
-			: name.replace(/\s/g, '').replace(/^./, (c) => c.toLowerCase());
+		const key =
+			name === 'Work Experience'
+				? 'workCompanies'
+				: name === 'Volunteering'
+					? 'volunteeringRoles'
+					: name.replace(/\s/g, '').replace(/^./, (c) => c.toLowerCase());
 
 		let done = false;
-		if (key === 'contactInfo') done = !!partial.contactInfo && Object.values(partial.contactInfo as object).some(Boolean);
+		if (key === 'contactInfo')
+			done = !!partial.contactInfo && Object.values(partial.contactInfo as object).some(Boolean);
 		else if (key === 'targetTitle') done = !!partial.targetTitle;
 		else if (key === 'professionalSummary') done = !!partial.professionalSummary;
 		else done = Array.isArray(partial[key]) && (partial[key] as unknown[]).length > 0;
@@ -72,33 +75,36 @@ export function useImportResume() {
 
 			const reader = res.body.getReader();
 			const decoder = new TextDecoder();
-			let fullText = '';
+			let buffer = '';
+			let lastParsed: ImportedResumeData | null = null;
 
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
-				fullText += decoder.decode(value, { stream: true });
+				buffer += decoder.decode(value, { stream: true });
 
-				// Try progressive parsing
-				try {
-					const { value: parsed } = await parsePartialJson(fullText);
-					if (parsed && typeof parsed === 'object') {
-						const data = parsed as ImportedResumeData;
+				// Each line is a complete JSON snapshot of the partial object
+				const lines = buffer.split('\n');
+				buffer = lines.pop() ?? ''; // keep incomplete last line
+
+				for (const line of lines) {
+					const trimmed = line.trim();
+					if (!trimmed) continue;
+					try {
+						const data = JSON.parse(trimmed) as ImportedResumeData;
+						lastParsed = data;
 						setPartialResult(data);
 						setProgress(inferProgress(data as Record<string, unknown>));
+					} catch {
+						// Malformed line — skip
 					}
-				} catch {
-					// Partial JSON not parseable yet — that's fine
 				}
 			}
 
-			// Final parse
-			const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-			if (jsonMatch) {
-				const parsed = JSON.parse(jsonMatch[0]) as ImportedResumeData;
-				setResult(parsed);
-				setPartialResult(parsed);
-				setProgress(inferProgress(parsed as Record<string, unknown>));
+			if (lastParsed) {
+				setResult(lastParsed);
+				setPartialResult(lastParsed);
+				setProgress(inferProgress(lastParsed as Record<string, unknown>));
 			} else {
 				throw new Error('Could not parse import response');
 			}
