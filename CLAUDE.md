@@ -122,6 +122,71 @@ docker compose logs -f app                 # Tail app logs
 
 ---
 
+## Pre-commit Hooks
+
+Git hooks are managed by the [pre-commit](https://pre-commit.com/) framework. Configuration lives in `.pre-commit-config.yaml`.
+
+### First-time setup (run once per machine)
+
+```bash
+# Install the pre-commit tool (macOS)
+brew install pre-commit
+
+# Install commitlint packages (if not already in package.json)
+npm install --save-exact --save-dev @commitlint/cli @commitlint/config-conventional @commitlint/types
+
+# Register git hooks
+pre-commit install                        # installs .git/hooks/pre-commit
+pre-commit install --hook-type commit-msg # installs .git/hooks/commit-msg
+```
+
+### What runs on every commit
+
+| Stage        | Hook                                             | What it does                         |
+| ------------ | ------------------------------------------------ | ------------------------------------ |
+| `pre-commit` | `trailing-whitespace`, `end-of-file-fixer`, etc. | File hygiene                         |
+| `pre-commit` | `prettier --write`                               | Auto-formats staged files            |
+| `pre-commit` | `eslint --fix`                                   | Lints and auto-fixes JS/TS           |
+| `pre-commit` | `tsc --noEmit`                                   | Full TypeScript type-check           |
+| `pre-commit` | `prisma format`                                  | Formats schema (only when changed)   |
+| `commit-msg` | `commitlint --edit`                              | Validates conventional commit format |
+
+All hooks use `language: system` and run from `node_modules` via `npx` — no remote downloads at commit time.
+
+### Commit message format
+
+Follows [Conventional Commits](https://www.conventionalcommits.org/). Allowed types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`, `test`, `ci`, `revert`.
+
+```
+feat(master-resume): add resume switcher dropdown
+fix(ai): handle empty response from ollama
+chore: update prisma to 6.2.0
+```
+
+Rules enforced by `commitlint.config.ts`:
+
+- Subject must be lower-case
+- No trailing period
+- Max 100 characters
+
+### Day-to-day commands
+
+```bash
+pre-commit run --all-files   # Run all hooks against every file (CI equivalent)
+pre-commit run prettier      # Run a single hook by id
+pre-commit autoupdate        # Bump pre-commit-hooks to latest revisions
+```
+
+### Bypassing hooks (use sparingly)
+
+```bash
+git commit --no-verify -m "wip: temp"   # Skip pre-commit hooks
+```
+
+Only use `--no-verify` for WIP commits on a private branch. Never bypass on `main` or before a PR merge.
+
+---
+
 ## Directory Structure
 
 ```
@@ -316,12 +381,12 @@ import { streamText } from 'ai';
 import { getProvider } from '@/lib/ai/providers';
 
 export async function analyzeVacancy(vacancyText: string, providerId: string, model: string) {
-	const aiModel = await getProvider(providerId, model); // reads API key from DB
-	return streamText({
-		model: aiModel,
-		system: SYSTEM_PROMPT,
-		prompt: vacancyText,
-	});
+    const aiModel = await getProvider(providerId, model); // reads API key from DB
+    return streamText({
+        model: aiModel,
+        system: SYSTEM_PROMPT,
+        prompt: vacancyText,
+    });
 }
 ```
 
