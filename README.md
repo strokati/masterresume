@@ -1,55 +1,72 @@
-# MasterResume
+# Reeesume
 
-A private, local-first career management app. One master database of your entire career history — unlimited, never shared. Tailored resumes and cover letters per application, AI-assisted, exported as PDF or DOCX.
+**Tailor your resume to each job vacancy**
+
+Reeesume is an open-source, privacy-first career management tool that uses AI to tailor your resume to every job vacancy — locally, with full control over your data.
+
+[Quick Start](#quick-start) · [Features](#features) · [Self-Hosting](#self-hosting)
 
 ---
 
 ## Features
 
-- **Master Resume** — structured career database with 11 sections (Work Experience, Education, Skills, Projects, Certifications, and more). The single source of truth, never sent anywhere.
-- **Per-application packages** — each job application gets its own custom resume, cover letter, and status tracking. Changes in one application never affect another.
-- **AI assistance** — analyze job postings, get tailored resume suggestions, run ATS checks, draft cover letters, rephrase bullets. Works with 10 AI providers (OpenAI, Anthropic, Google, Mistral, Groq, xAI, Cohere, z.ai, Ollama, custom). API keys are stored locally in the database — not in environment variables.
-- **Application Tracker** — sortable table and Kanban view with status, salary, deadlines, follow-up dates, and excitement rating.
-- **PDF & DOCX export** — WYSIWYG PDF via headless Chrome (Puppeteer); 4 built-in resume templates.
-- **Resume import** — upload an existing PDF or DOCX and AI extracts it into your Master Resume.
-- **Works fully offline** — AI features are the only thing that requires an internet connection (unless you use Ollama).
+**AI Workflow**
+
+- **Vacancy analysis** — paste any job posting and get a structured breakdown: responsibilities, must-haves, ATS keywords, and a match preview against your profile
+- **Resume tailoring** — AI picks which experiences and skills are most relevant, with reasoning for every include/exclude decision
+- **ATS score check** — score your tailored resume 0–100 with HIGH/MED/LOW priority fixes and keyword coverage gaps
+- **Cover letter generation** — full cover letter drafted from your resume and the posting; choose tone: Professional, Confident & Direct, or Warm & Narrative
+- **Bullet rephrasing** — select any bullet or paragraph, AI rewrites it for stronger impact in-place
+- **Resume import** — upload a PDF or DOCX and AI extracts and structures it into your career database automatically
+- **10 AI providers** — OpenAI, Anthropic, Google Gemini, Mistral, Groq, xAI, Cohere, z.ai, Ollama (fully offline), custom endpoint. API keys stored in your local database, never in `.env`
+
+**Career Database**
+
+- **Driven Resume** — your permanent private career database with 11 sections: Work Experience, Education, Skills, Projects, Certifications, Awards, Volunteering, Publications, and more. Unlimited entries, never exported or shared
+- **Multi-language resumes** — maintain separate resumes in different languages (English, German, French, and more) for different job markets
+- **Resume import** — bootstrap your database by uploading an existing PDF or DOCX
+
+**Applications**
+
+- **Per-application packages** — each application gets its own tailored resume, cover letter, and tracking. Changes in one never affect another
+- **Application Tracker** — sortable table and Kanban board with status (Saved → Applied → Screening → Interview → Offer), salary range, deadline, follow-up date, and excitement rating (1–5 stars)
+
+**Export & Templates**
+
+- **PDF export** — WYSIWYG via headless Chrome (Puppeteer); what you see is what you get
+- **DOCX export** — for recruiters who require Word format
+- **4 built-in templates** — ATS Simple, Professional Classic, Modern Minimal, International/German-style
+
+**Privacy & Control**
+
+- All data stored locally in PostgreSQL — nothing sent to any cloud service
+- AI calls go directly from the app to your chosen provider — no intermediary backend
+- For zero data leaving your machine, use [Ollama](https://ollama.com/) as your AI provider
+- Two deployment modes: local (no login) or self-hosted with passwordless email OTP
 
 ---
 
-## Deployment Modes
-
-| Mode             | `AUTH_MODE` | Auth                                          | Best for                               |
-| ---------------- | ----------- | --------------------------------------------- | -------------------------------------- |
-| **Local Docker** | `none`      | None — app opens directly at `localhost:3000` | Single machine, personal use           |
-| **Self-hosted**  | `email_otp` | Passwordless 6-digit OTP sent to your email   | VPS / home server, multi-device access |
-
----
-
-## Quick Start — Local Docker (recommended)
+## Quick Start
 
 **Requirements:** Docker + Docker Compose
 
 ```bash
-# 1. Clone the repo
-git clone <repo-url>
-cd master-resume
-
-# 2. Copy env file (defaults work out of the box for local mode)
+# Clone and start
+git clone https://github.com/strokati/reeesume.git
+cd reeesume
 cp .env.example .env
-
-# 3. Build and start
 docker compose up --build
 ```
 
 Open [http://localhost:3000](http://localhost:3000) — no login required.
 
-Data is stored in a named Docker volume (`postgres_data`) and persists across restarts.
+Data persists in a named Docker volume (`postgres_data`) across restarts.
 
 ---
 
-## Quick Start — Self-hosted (email OTP)
+## Self-Hosting
 
-**Requirements:** Docker + Docker Compose, an SMTP server or email service
+For multi-device access with email-based authentication:
 
 ```bash
 cp .env.example .env
@@ -67,48 +84,60 @@ SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=you@example.com
 SMTP_PASS=your-password
-SMTP_FROM=MasterResume <you@example.com>
+SMTP_FROM=Driven Resume <you@example.com>
 ```
 
 ```bash
 docker compose up --build
 ```
 
-On first visit you'll be prompted for your email. A 6-digit code is sent to `ALLOWED_EMAIL`. No passwords are ever set or stored.
+On first visit, enter your email. A 6-digit OTP is sent to `ALLOWED_EMAIL`. No passwords are ever set or stored.
 
 ---
 
 ## Development Setup
 
-**Requirements:** Node.js 20+, Docker (for PostgreSQL)
+**Requirements:** Node.js 20+, Docker
 
 ```bash
-# 1. Start the database (+ Mailhog for email catch at http://localhost:8025)
+# Start database + Mailhog (email catch at http://localhost:8025)
 docker compose -f docker-compose.dev.yml up -d
 
-# 2. Install dependencies
-cp .env.example .env   # edit DATABASE_URL if needed
+cp .env.example .env
 npm install
-
-# 3. Set up the database
 npx prisma migrate dev --name init
-
-# 4. Start the dev server
-npm run dev            # → http://localhost:3000
+npm run dev   # → http://localhost:3000
 ```
 
-### Useful commands
+**Useful commands:**
 
 ```bash
-npm run dev               # Next.js dev server with hot reload
+npm run dev               # Dev server with hot reload
 npm run build             # Production build
 npm run lint              # ESLint
-npm run type-check        # TypeScript check (no emit)
+npm run type-check        # TypeScript check
 
 npx prisma studio         # Database GUI → http://localhost:5555
 npx prisma migrate dev    # Apply schema changes
-npx prisma generate       # Regenerate Prisma client after schema edit
+npx prisma generate       # Regenerate Prisma client
 ```
+
+---
+
+## Tech Stack
+
+| Layer       | Choice                                        |
+| ----------- | --------------------------------------------- |
+| Framework   | Next.js 15 (App Router, React 19, TypeScript) |
+| Database    | PostgreSQL 16 + Prisma                        |
+| Auth        | Auth.js v5 (email OTP)                        |
+| AI          | Vercel AI SDK (streaming, 10 providers)       |
+| Styling     | Tailwind CSS + shadcn/ui                      |
+| Editor      | Tiptap                                        |
+| Drag & drop | @dnd-kit                                      |
+| Data fetch  | TanStack Query                                |
+| PDF export  | Puppeteer (headless Chrome)                   |
+| Deployment  | Docker + Docker Compose                       |
 
 ---
 
@@ -134,29 +163,16 @@ See [`.env.example`](.env.example) for the full annotated list.
 
 ---
 
-## Resume Templates
+## Contributing
 
-| ID                     | Name                         | Description                                                      |
-| ---------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `ats-simple`           | ATS Simple                   | Single-column, no tables or graphics. Maximum ATS compatibility. |
-| `professional-classic` | Professional Classic         | Two-column, subtle formatting.                                   |
-| `modern-minimal`       | Modern Minimal               | Contemporary design with accent color.                           |
-| `international-de`     | International / German-style | Photo slot, follows DE/AT/CH resume conventions.                 |
+Contributions are welcome — bug fixes, features, documentation, or translations.
 
----
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feat/new-feature`)
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/) (`git commit -m 'feat: add new feature'`)
+4. Push and open a Pull Request
 
-## Tech Stack
-
-Next.js 15 · React 19 · TypeScript · PostgreSQL 16 · Prisma · Tailwind CSS · shadcn/ui · Auth.js v5 · Vercel AI SDK · Tiptap · TanStack Query · Puppeteer · Docker
-
----
-
-## Data & Privacy
-
-- All data is stored in a PostgreSQL database running locally in Docker. Nothing is sent to any cloud service.
-- AI calls go directly from the Next.js server to the provider you configure (OpenAI, Anthropic, etc.). There is no intermediary backend.
-- For complete local operation with no data leaving your machine, use [Ollama](https://ollama.com/) as your AI provider.
-- The Master Resume is never included in exports or sent to any third party — only the tailored Custom Resume for that specific application is exported.
+Other ways to help: star the repository, report bugs, or suggest features.
 
 ---
 

@@ -23,7 +23,7 @@ export function Sidebar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <FileText className="h-4 w-4" />
         </div>
-        <span className="text-base font-semibold tracking-tight">MasterResume</span>
+        <span className="text-base font-semibold tracking-tight">Reeesume</span>
       </div>
       <nav className="flex-1 space-y-1 px-3 pt-2">
         {navItems.map(({ href, label, icon: Icon }) => {
@@ -34,7 +34,7 @@ export function Sidebar() {
               href={href}
               className={cn(
                 buttonVariants({ variant: 'ghost' }),
-                'w-full justify-start gap-3 rounded-xl px-3',
+                'w-full justify-start gap-3 rounded-xl px-3 text-md',
                 isActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
                   : 'text-muted-foreground'
