@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createMasterResume } from '@/server/actions/master-resume';
@@ -45,7 +45,7 @@ export function NewResumeDialog({
 		register,
 		handleSubmit,
 		setValue,
-		watch,
+		control,
 		reset,
 		formState: { errors },
 	} = useForm<FormValues>({
@@ -53,7 +53,7 @@ export function NewResumeDialog({
 		defaultValues: { name: '', language: 'en', languageCode: '' },
 	});
 
-	const selectedLanguage = watch('language');
+	const selectedLanguage = useWatch({ control, name: 'language' });
 
 	async function onSubmit(data: FormValues) {
 		const language = data.language === 'other' ? data.languageCode ?? '' : data.language;

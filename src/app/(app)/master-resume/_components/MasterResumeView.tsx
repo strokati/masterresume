@@ -89,15 +89,15 @@ export function MasterResumeView({
 					</Button>
 				}
 			>
-				<ContactInfoForm resumeId={resume.id} defaultValues={contactInfo} />
+				<ContactInfoForm key={JSON.stringify(contactInfo)} resumeId={resume.id} defaultValues={contactInfo} />
 			</SectionCard>
 
 			<SectionCard title="Target Title">
-				<TargetTitleForm resumeId={resume.id} defaultValue={resume.targetTitle} />
+				<TargetTitleForm key={resume.targetTitle} resumeId={resume.id} defaultValue={resume.targetTitle} />
 			</SectionCard>
 
 			<SectionCard title="Professional Summary" collapsible>
-				<SummaryEditor resumeId={resume.id} defaultValue={resume.professionalSummary} />
+				<SummaryEditor key={resume.professionalSummary} resumeId={resume.id} defaultValue={resume.professionalSummary} />
 			</SectionCard>
 
 			<WorkExperienceSection companies={companies} resumeId={resume.id} />

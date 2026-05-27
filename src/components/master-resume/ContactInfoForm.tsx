@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useEffect } from 'react';
+import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -32,12 +32,6 @@ export function ContactInfoForm({
 		resolver: zodResolver(ContactInfoSchema),
 		defaultValues: defaultValues ?? { name: '', email: '', phone: '', location: '' },
 	});
-
-	useEffect(() => {
-		if (defaultValues) {
-			form.reset(defaultValues);
-		}
-	}, [defaultValues, form]);
 
 	function onSubmit(data: ContactInfoInput) {
 		startTransition(async () => {

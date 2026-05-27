@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
-import { useTransition, useRef, useEffect } from 'react';
+import { useTransition, useRef } from 'react';
 import { toast } from 'sonner';
 import { updateProfessionalSummary } from '@/server/actions/master-resume';
 import { Button } from '@/components/ui/button';
@@ -64,15 +64,6 @@ export function SummaryEditor({
 			}, 1000);
 		},
 	});
-
-	useEffect(() => {
-		if (editor && defaultValue !== undefined) {
-			const current = editor.isEmpty ? '' : editor.getHTML();
-			if (current !== (defaultValue ?? '')) {
-				editor.commands.setContent(defaultValue ?? '');
-			}
-		}
-	}, [editor, defaultValue]);
 
 	if (!editor) return null;
 
