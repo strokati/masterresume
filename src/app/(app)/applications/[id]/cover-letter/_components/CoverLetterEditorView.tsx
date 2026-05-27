@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Bold from '@tiptap/extension-bold';
 import {
   ArrowLeft,
   FolderOpen,
@@ -78,6 +77,7 @@ export function CoverLetterEditorView({
   } = useCoverLetterGeneration(application.id);
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: false,
@@ -87,7 +87,6 @@ export function CoverLetterEditorView({
         codeBlock: false,
         horizontalRule: false,
       }),
-      Bold,
     ],
     content: initialDraft?.content || '<p></p>',
     onUpdate: ({ editor: e }) => {

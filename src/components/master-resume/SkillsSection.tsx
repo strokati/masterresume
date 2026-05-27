@@ -173,7 +173,12 @@ function SkillCategory({
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{category}</Label>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        id={`skills-${category}-dnd`}
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
         <SortableContext items={skills.map((s) => s.id)} strategy={horizontalListSortingStrategy}>
           <div className="flex flex-wrap items-center gap-2">
             {skills.map((skill) => (

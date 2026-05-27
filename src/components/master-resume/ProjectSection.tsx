@@ -81,7 +81,12 @@ export function ProjectSection({ projects, resumeId }: { projects: Project[]; re
       {projects.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No projects added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="project-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={projects.map((p) => p.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
               {projects.map((p) => (

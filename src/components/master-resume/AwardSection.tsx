@@ -81,7 +81,12 @@ export function AwardSection({ awards, resumeId }: { awards: Award[]; resumeId: 
       {awards.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No awards added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="award-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={awards.map((a) => a.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
               {awards.map((a) => (

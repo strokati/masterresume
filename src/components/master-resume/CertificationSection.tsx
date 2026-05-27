@@ -93,7 +93,12 @@ export function CertificationSection({
       {certifications.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No certifications added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="certification-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={certifications.map((c) => c.id)}
             strategy={verticalListSortingStrategy}

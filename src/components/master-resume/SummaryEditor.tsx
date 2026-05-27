@@ -2,8 +2,6 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Bold from '@tiptap/extension-bold';
-import BulletList from '@tiptap/extension-bullet-list';
 import { useTransition, useRef } from 'react';
 import { toast } from 'sonner';
 import { updateProfessionalSummary } from '@/server/actions/master-resume';
@@ -46,7 +44,8 @@ export function SummaryEditor({
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const editor = useEditor({
-    extensions: [StarterKit, Bold, BulletList],
+    immediatelyRender: false,
+    extensions: [StarterKit],
     content: defaultValue ?? '',
     editorProps: {
       attributes: { class: 'min-h-[120px] prose prose-sm max-w-none focus:outline-none' },

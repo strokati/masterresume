@@ -93,7 +93,12 @@ export function PublicationSection({
       {publications.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No publications added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="publication-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={publications.map((p) => p.id)}
             strategy={verticalListSortingStrategy}

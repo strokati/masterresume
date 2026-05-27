@@ -93,7 +93,12 @@ export function VolunteeringSection({
       {roles.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No volunteering roles added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="volunteering-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={roles.map((r) => r.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
               {roles.map((r) => (

@@ -98,7 +98,12 @@ export function EducationSection({
       {education.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No education added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="education-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={education.map((e) => e.id)}
             strategy={verticalListSortingStrategy}

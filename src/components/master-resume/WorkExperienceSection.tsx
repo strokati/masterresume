@@ -68,7 +68,12 @@ export function WorkExperienceSection({
       {companies.length === 0 ? (
         <p className="text-sm text-muted-foreground py-2">No work experience added yet.</p>
       ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="work-experience-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={companies.map((c) => c.id)}
             strategy={verticalListSortingStrategy}
